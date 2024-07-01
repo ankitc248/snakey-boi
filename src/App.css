@@ -54,8 +54,8 @@ body {
   flex-direction: column;
   height: 100%;
   align-items: center;
-  justify-content: space-around;
-  padding-block: 2rem;
+  justify-content: flex-start;
+  padding-block: 1rem;
 }
 
 h1 {
@@ -237,6 +237,16 @@ button:hover {
       text-transform: capitalize;
     }
   }
+
+  .key.two-fingers {
+    .up-swipe {
+      rotate: 45deg;
+    }
+
+    .down-swipe {
+      rotate: -90deg;
+    }
+  }
 }
 
 .btn {
@@ -256,27 +266,26 @@ button:hover {
   gap: 1rem;
 }
 
-.paused .game-banner {
-  display: none;
+.paused .game-banner,
+.game-ended .game-banner {
+  left: 100%;
 }
 
 .game-banner {
-  /* display: none; */
   padding: 1rem;
   position: absolute;
   top: 0;
-  left: 0;
+  left: 0px;
   width: 100%;
   height: 100%;
   background-color: var(--dark-black-color);
   transition: all 0.2s ease-out;
-  /* background: var(--dark-black-color); */
   z-index: 10;
   overflow: hidden;
 
   .logo {
-    max-width: 200px;
-    width: 30%;
+    max-width: 100px;
+    width: 50%;
     align-self: center;
   }
 
@@ -291,12 +300,13 @@ button:hover {
   }
 
   .banner-title {
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 3px;
-    font-size: 26px;
+    font-size: 32px;
     font-family: monospace;
     text-align: center;
+    scale: 1 1.1;
   }
 
   .banner-text {
@@ -314,8 +324,18 @@ button:hover {
     flex-direction: column;
     gap: 1.5rem;
     align-items: stretch;
-    justify-content: space-between;
+    justify-content: space-evenly;
     padding-block: 2rem;
+  }
+
+  .board-cell {
+    align-self: center;
+    border: none;
+    scale: 2;
+
+    .inside-cell {
+      background-color: transparent !important;
+    }
   }
 
   .btn {
@@ -324,10 +344,33 @@ button:hover {
     justify-content: space-between;
   }
 }
+.game-lost .game-banner .food-icon{
+  vertical-align: text-bottom;
+}
+.not-started,
+.game-won {
+  .game-banner{
+    left: 0px;
+  }
+  .banner-title {
+    text-shadow: 0px 2px 2px var(--green-color)
+  }
+}
 
 .game-banner.mini {
-  background-color: rgba(10, 10, 10, 0.95);
+  background-color: rgba(10, 10, 10, 0.9);
   display: none;
+
+  .banner-body {
+    justify-content: space-between;
+    padding: 1rem;
+  }
+
+  .pause-icon {
+    align-self: center;
+    filter: invert(1);
+    max-width: 50px;
+  }
 }
 
 .paused .game-banner.mini {
@@ -416,13 +459,15 @@ button:hover {
 
   .btn {
     box-shadow: 0px 4px 0px var(--light-black-color);
-    outline-offset: 0px;
+    /* outline-offset: 0px; */
   }
 
   .btn.active {
     background-color: var(--body-black-color);
-    box-shadow: none;
     outline: solid 2px var(--white-font-color);
+    outline-offset: 2px;
+    pointer-events: none;
+    box-shadow: none;
 
     .icon {
       filter: invert(1);
@@ -451,10 +496,6 @@ button:hover {
       .icon {
         max-width: 20px;
       }
-    }
-
-    .up-btn {
-      box-shadow: none;
     }
   }
 
@@ -564,7 +605,7 @@ button:hover {
   display: flex;
 }
 
-.game-lost .inside-cell {
+.game-lost .board .inside-cell {
   --green-color: var(--white-font-color);
 }
 
@@ -654,21 +695,37 @@ button:hover {
 
 }
 
+.game-ended.game-lost .board-cell:not(.snake-head) .inside-cell {
+  animation-name: scale-down-pop-out !important;
+  animation-delay: 1s;
+  animation-fill-mode: forwards;
+}
+
+.game-ended.game-lost .board-cell.snake-head .inside-cell {
+  animation: rotate-hourglass 1s 1s linear infinite;
+  background-color: transparent !important;
+}
+
+.game-ended.game-lost .board-cell.snake-head .inside-cell .snake-body {
+  border-bottom-left-radius: 0;
+}
+
+.snake-head .tail {
+  rotate: inherit !important;
+  background-color: var(--green-color);
+}
+
+.snake-head .tail .snake-body {
+  clip-path: none !important;
+}
+
 @keyframes rotate-hourglass {
   0% {
-    rotate: 0deg;
-  }
-
-  40% {
-    rotate: 180deg;
-  }
-
-  90% {
-    rotate: 180deg;
+    transform: rotate(0deg);
   }
 
   100% {
-    rotate: 0deg;
+    transform: rotate(360deg);
   }
 }
 
@@ -685,6 +742,21 @@ button:hover {
     scale: 1;
   }
 }
+
+@keyframes scale-down-pop-out {
+  0% {
+    scale: 1.5;
+  }
+
+  50% {
+    scale: 1;
+  }
+
+  100% {
+    scale: 0;
+  }
+}
+
 
 .snake-head .snake-body {
   /* display: none !important; */
@@ -810,5 +882,26 @@ button:hover {
 
   .keys.swipe {
     display: block;
+  }
+}
+
+.wavy-text {
+  display: inline-block;
+}
+
+.wavy-char {
+  display: inline-block;
+  animation: wave 1s infinite ease-in-out;
+}
+
+@keyframes wave {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
   }
 }

@@ -5,11 +5,15 @@ import GameBanner from "./components/GameBanner";
 import UserControls from "./components/UserControls";
 function App() {
   useEffect(() => {
-    let cachedGameInfo = localStorage.getItem("gameInfo");
+    let cachedGameInfo = localStorage.getItem("snakey-boi-info");
+    let cachedHighscore = localStorage.getItem("snakey-boi-highscore");
+    if (cachedHighscore) {
+      cachedHighscore = JSON.parse(cachedHighscore);
+      setHighscore(cachedHighscore.highscore);
+    }
     if (cachedGameInfo) {
       cachedGameInfo = JSON.parse(cachedGameInfo);
       if (cachedGameInfo.snakeLength <= 1) return;
-      setHighscore(cachedGameInfo.highscore);
       setSnakeLength(cachedGameInfo.snakeLength);
       setDirection(cachedGameInfo.direction);
       setSnakeMoves(cachedGameInfo.snakeMoves);
@@ -22,19 +26,18 @@ function App() {
       } else {
         setEdibleCoords(cachedGameInfo.edibleCoords);
       }
-    }
-    else{
+    } else {
       setGameState("not-started");
     }
   }, []);
   const snakeMoveInterval = useRef(null);
   const trafficLights = useRef(null);
-  const allSpeeds = ["slow", "normal", "fast"];
+  const allSpeeds = ["normal", "fast", "super-sonic"];
   const [highscore, setHighscore] = useState(1);
   const [edibleStatus, setEdibleStatus] = useState("");
   const [lastPosition, setLastPosition] = useState();
   const [boardSize, setBoardSize] = useState(9);
-  const [snakeLength, setSnakeLength] = useState(1);
+  const [snakeLength, setSnakeLength] = useState(10);
   const [direction, setDirection] = useState("up");
   const [speed, setSpeed] = useState(allSpeeds[1]);
   const [moveTimer, setMoveTimer] = useState(1000);
@@ -45,14 +48,17 @@ function App() {
 
   const storeGameInfoInCache = useCallback(() => {
     let gameInfo = {
-      highscore: highscore,
       edibleCoords: edibleCoords,
       snakeLength: snakeLength,
       direction: direction,
       snakeMoves: snakeMoves,
     };
     if (gameInfo.snakeLength > 1)
-      localStorage.setItem("gameInfo", JSON.stringify(gameInfo));
+      localStorage.setItem("snakey-boi-info", JSON.stringify(gameInfo));
+    localStorage.setItem(
+      "snakey-boi-highscore",
+      JSON.stringify({ highscore: highscore })
+    );
   }, [highscore, edibleCoords, snakeLength, direction, snakeMoves]);
 
   useEffect(() => {
@@ -65,7 +71,7 @@ function App() {
     }
   }, [speed]);
 
-  const resumeGame = () => {
+  const resumeGame = useCallback(() => {
     setGameState("resuming");
     let timer = 500;
     setTimeout(() => {
@@ -81,9 +87,25 @@ function App() {
       trafficLights.current.className = "traffic-lights";
       setGameState("playing");
     }, timer * 4);
-  };
+  }, [setGameState]);
+
+  const endGame = useCallback(
+    (type) => {
+      setGameState("game-ended " + type);
+      clearInterval(snakeMoveInterval.current);
+      setTimeout(() => {
+        setGameState(type);
+        localStorage.removeItem("snakey-boi-info");
+        localStorage.setItem(
+          "snakey-boi-highscore",
+          JSON.stringify({ highscore: highscore })
+        );
+      }, 3000);
+    },
+    [highscore]
+  );
   const startGame = () => {
-    localStorage.removeItem("gameInfo");
+    localStorage.removeItem("snakey-boi-info");
     setDirection("up");
     setSnakeLength(1);
     setSnakeMoves([
@@ -289,20 +311,10 @@ function App() {
           (snakeMove) =>
             snakeMove.x === newCoords.x && snakeMove.y === newCoords.y
         );
-        if (newIndex !== -1 && newIndex !== 0) {
-          setTimeout(() => {
-            setGameState("game-lost");
-            localStorage.removeItem("gameInfo");
-            clearInterval(snakeMoveInterval.current);
-          }, moveTimer);
-        }
-        if (snakeLength === boardSize * boardSize) {
-          setTimeout(() => {
-            setGameState("game-won");
-            localStorage.removeItem("gameInfo");
-            clearInterval(snakeMoveInterval.current);
-          }, moveTimer);
-        }
+        if (newIndex !== -1 && newIndex !== 0) endGame("game-lost");
+
+        if (snakeLength === boardSize * boardSize) endGame("game-won");
+
         if (snakeMoves.length >= snakeLength) {
           setSnakeMoves((prev) => [...prev.slice(1), newCoords]);
         } else {
@@ -324,6 +336,7 @@ function App() {
     highscore,
     setHighscore,
     storeGameInfoInCache,
+    endGame,
   ]);
   //Window loses focus event listener
   useEffect(() => {
@@ -407,6 +420,11 @@ function App() {
             {gameState === "paused" && (
               <div className="banner-body paused">
                 <h2 className="banner-title">Paused</h2>
+                <img
+                  src="assets/svg-icons/pause.svg"
+                  className="icon svg pause-icon"
+                  alt="pause"
+                />
                 <button
                   type="button"
                   className="btn board-btn"

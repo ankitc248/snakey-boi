@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Board = ({
   size,
@@ -16,17 +16,18 @@ const Board = ({
     { type: "slow", iconSrc: "assets/svg-icons/power-up/turtle.svg" },
     // { type: "star", iconSrc: "assets/svg-icons/power-up/star.svg" },
   ];
-  const edibles = [
-    { type: "lemon", iconSrc: "assets/svg-icons/edible/lemon.svg" },
-    { type: "watermelon", iconSrc: "assets/svg-icons/edible/watermelon.svg" },
-    { type: "sushi", iconSrc: "assets/svg-icons/edible/sushi.svg" },
-  ];
   const [powerUp, setPowerUp] = useState(
     powerUps[Math.floor(Math.random() * powerUps.length)]
   );
-  const [edible, setEdible] = useState(
-    edibles[Math.floor(Math.random() * edibles.length)]
-  );
+  const [edible, setEdible] = useState();
+  useEffect(() => {
+    const edibles = [
+      { type: "lemon", iconSrc: "assets/svg-icons/edible/lemon.svg" },
+      { type: "watermelon", iconSrc: "assets/svg-icons/edible/watermelon.svg" },
+      { type: "sushi", iconSrc: "assets/svg-icons/edible/sushi.svg" },
+    ];
+    setEdible(edibles[Math.floor(Math.random() * edibles.length)]);
+  }, [snakeLength, setEdible]);
   return (
     <div className={"board " + direction}>
       {board.map((row, rowIndex) => (

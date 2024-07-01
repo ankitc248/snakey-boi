@@ -9,7 +9,7 @@ const GameBanner = ({
     <div className={"game-banner " + gameState}>
       {gameState === "not-started" && (
         <div className="banner-body not-started">
-          <h2 className="banner-title">Snakey boi</h2>
+          <h2 className="banner-title">{WavyText("Snakey Boi")}</h2>
           <img src="snake.svg" className="icon svg logo" alt="snake" />
           <div className="help-info">
             <h1>Control snake</h1>
@@ -52,7 +52,12 @@ const GameBanner = ({
               <span className="key">Esc</span>
             </div>
             <div className="keys swipe">
-              <span className="key">
+              <span className="key two-fingers">
+                <img
+                  src="assets/svg-icons/swipe-left.svg"
+                  className="icon svg big-icon up-swipe"
+                  alt="swipe"
+                />
                 <span>Two Fingers swipe down/up</span>
               </span>
             </div>
@@ -76,7 +81,7 @@ const GameBanner = ({
         <div className="banner-body continue">
           <h2 className="banner-title">Continue?</h2>
           <div className="banner-text">
-            Old game found, do you want to continue the same or start over?
+            Pending game found, do you want to continue the same or start over?
           </div>
           <div className="btn-group">
             <button
@@ -109,11 +114,16 @@ const GameBanner = ({
         </div>
       )}
       {gameState === "game-lost" && (
-        <div className="banner-body game-lost">
+        <div className="banner-body game-lost up">
           <h2 className="banner-title">Game over</h2>
+          <span class="board-cell snake-head on-top has-snake ">
+            <span class="inside-cell">
+              <span class="snake-body"></span>
+            </span>
+          </span>
           <div className="banner-text">
             You grew to {snakeLength} times your original size. Needed to eat{" "}
-            {+boardSize * boardSize - snakeLength} more to win. <br></br>Don't
+            {+boardSize * boardSize - snakeLength} <img src="assets/svg-icons/edible/lemon.svg" className="icon svg big-icon food-icon" alt="food" /> more to win. <br></br>Don't
             give up!
           </div>
           <button
@@ -135,7 +145,7 @@ const GameBanner = ({
       )}
       {gameState === "game-won" && (
         <div className="banner-body game-won">
-          <h2 className="banner-title">You won !</h2>
+          <h2 className="banner-title">{WavyText("You won !")}</h2>
           <div className="banner-text">
             You took *totalTime* to finish the game. Keep trying for a better
             time.
@@ -158,5 +168,22 @@ const GameBanner = ({
     </div>
   );
 };
-
+const WavyText = (text) => {
+  return (
+    <div className="wavy-text">
+      {text.split("").map((char, index) => (
+        <span
+          key={index}
+          className="wavy-char"
+          style={{
+            animationDelay: `${index * 0.1}s`,
+            whiteSpace: char === " " ? "pre" : "normal",
+          }}
+        >
+          {char}
+        </span>
+      ))}
+    </div>
+  );
+};
 export default GameBanner;
