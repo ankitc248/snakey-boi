@@ -287,8 +287,9 @@ function App() {
         else if (e.detail.dir === "left") handleDirectionChange("left");
         else if (e.detail.dir === "right") handleDirectionChange("right");
       } else if (e.detail.fingers === 2) {
-        if (e.detail.dir === "up") resumeGame();
-        else if (e.detail.dir === "down") setGameState("paused");
+        if (e.detail.dir === "up" && gameState === "paused") resumeGame();
+        else if (e.detail.dir === "down" && gameState === "playing")
+          setGameState("paused");
       }
     };
 

@@ -20,7 +20,6 @@
 }
 
 body {
-  background-color: var(--body-black-color);
   background-color: var(--dark-black-color);
   display: flex;
   justify-content: center;
@@ -31,19 +30,14 @@ body {
 
 .App {
   width: fit-content;
-  /* background-color: var(--dark-black-color); */
   width: 100dvw;
   height: 100dvh;
   overflow: hidden;
-  /* padding: 1rem; */
   justify-content: center;
   align-content: flex-start;
-  /* align-items: center; */
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
-  /* flex-direction: column; */
-  touch-action: none;
 }
 
 .middle-container {
@@ -56,6 +50,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   padding-block: 1rem;
+  touch-action: none;
 }
 
 h1 {
@@ -282,6 +277,7 @@ button:hover {
   transition: all 0.2s ease-out;
   z-index: 10;
   overflow: hidden;
+  touch-action: auto;
 
   .logo {
     max-width: 100px;
@@ -322,7 +318,7 @@ button:hover {
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
     align-items: stretch;
     justify-content: space-evenly;
     padding-block: 2rem;
@@ -344,17 +340,24 @@ button:hover {
     justify-content: space-between;
   }
 }
-.game-lost .game-banner .food-icon{
+
+.game-lost .game-banner .food-icon {
   vertical-align: text-bottom;
 }
+
 .not-started,
 .game-won {
-  .game-banner{
+  .game-banner {
     left: 0px;
   }
+
   .banner-title {
     text-shadow: 0px 2px 2px var(--green-color)
   }
+}
+
+.not-started .banner-body {
+  justify-content: flex-start;
 }
 
 .game-banner.mini {
@@ -529,7 +532,12 @@ button:hover {
 
   .btn {
     border-radius: 4px !important;
-    width: 70px !important;
+    width: 80px !important;
+    height: 50px;
+
+    .icon {
+      max-width: 20px;
+    }
   }
 
   .empty-space {
@@ -596,7 +604,7 @@ button:hover {
 .board {
   position: relative;
   width: max-content;
-  border: 1px solid var(--light-black-color);
+  border: 1px solid #555;
   display: flex;
   flex-direction: column;
 }
@@ -614,7 +622,7 @@ button:hover {
   background-color: transparent;
   aspect-ratio: 1;
   height: 40px;
-  border: 1px solid var(--light-black-color);
+  border: 1px solid #555;
 
   .inside-cell {
     animation: scale-up-pop-in 0.3s ease-in forwards;
@@ -857,7 +865,7 @@ button:hover {
 .board-cell.has-power-up .inside-cell {
   background-color: var(--yellow-color);
 } */
-@media screen and (max-width: 400px) {
+@media only screen and (max-width: 400px) {
   .board-cell {
     height: 35px;
   }

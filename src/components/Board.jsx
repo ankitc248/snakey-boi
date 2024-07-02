@@ -35,39 +35,14 @@ const Board = ({
           {row.map((cell, cellIndex) => (
             <span
               key={cellIndex}
-              className={`board-cell ${edibleStatus} ${
-                cellIndex === edibleCoords.x && rowIndex === edibleCoords.y
-                  ? "has-edible "
-                  : ""
-              }${
-                cellIndex === powerUpCoords.x && rowIndex === powerUpCoords.y
-                  ? "has-power-up "
-                  : ""
-              }${
-                snakeMoves.findIndex(
-                  (move) => move.x === cellIndex && move.y === rowIndex
-                ) ===
-                snakeMoves.length - 1
-                  ? "snake-head "
-                  : ""
-              }${
-                snakeMoves.findIndex(
-                  (move) => move.x === cellIndex && move.y === rowIndex
-                ) !==
-                  snakeMoves.length - 1 &&
-                snakeMoves.findLastIndex(
-                  (move) => move.x === cellIndex && move.y === rowIndex
-                ) ===
-                  snakeMoves.length - 1
-                  ? "snake-head on-top "
-                  : ""
-              }${
-                snakeMoves.some(
-                  (move) => move.x === cellIndex && move.y === rowIndex
-                )
-                  ? "has-snake "
-                  : ""
-              }`}
+              className={`board-cell ${getCellClassName(
+                cellIndex,
+                rowIndex,
+                edibleCoords,
+                powerUpCoords,
+                snakeMoves,
+                edibleStatus
+              )}`}
             >
               <span
                 className={`inside-cell ${calculateBend(
@@ -206,6 +181,7 @@ const calculateTail = (x, y, snakeMoves, snakeLength, size) => {
   if (currPosIndex === 0) {
     return "tail " + calculateTailDirection(snakeMoves, size);
   }
+  return "";
 };
 
 const calculateTailDirection = (snakeMoves, size) => {
@@ -256,5 +232,35 @@ const calculateTailDirection = (snakeMoves, size) => {
 
   return "";
 };
+const getCellClassName = (
+  cellIndex,
+  rowIndex,
+  edibleCoords,
+  powerUpCoords,
+  snakeMoves,
+  edibleStatus
+) => {
+  const isEdible = cellIndex === edibleCoords.x && rowIndex === edibleCoords.y;
+  const hasPowerUp =
+    cellIndex === powerUpCoords.x && rowIndex === powerUpCoords.y;
+  const snakeHeadIndex = snakeMoves.findIndex(
+    (move) => move.x === cellIndex && move.y === rowIndex
+  );
+  const snakeHeadOnTop =
+    snakeMoves.findLastIndex(
+      (move) => move.x === cellIndex && move.y === rowIndex
+    ) ===
+    snakeMoves.length - 1;
+  const hasSnake = snakeMoves.some(
+    (move) => move.x === cellIndex && move.y === rowIndex
+  );
 
+  return `${edibleStatus} ${isEdible ? "has-edible " : ""}${
+    hasPowerUp ? "has-power-up " : ""
+  }${snakeHeadIndex === snakeMoves.length - 1 ? "snake-head " : ""}${
+    snakeHeadIndex !== snakeMoves.length - 1 && snakeHeadOnTop
+      ? "snake-head on-top "
+      : ""
+  }${hasSnake ? "has-snake " : ""}`;
+};
 export default Board;
