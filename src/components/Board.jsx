@@ -61,7 +61,35 @@ const Board = ({
               >
                 {snakeMoves.some(
                   (move) => move.x === cellIndex && move.y === rowIndex
-                ) && <span className="snake-body"></span>}
+                ) && (
+                  <span className="snake-body">
+                    {snakeMoves.findLastIndex(
+                      (move) => move.x === cellIndex && move.y === rowIndex
+                    ) ===
+                      snakeMoves.length - 1 && (
+                      <span className="eyes">
+                        <span className="eye left">
+                          <span className="eye-icon">
+                            <img
+                              src="assets/svg-icons/close.svg"
+                              alt="eye"
+                              className="icon"
+                            ></img>
+                          </span>
+                        </span>
+                        <span className="eye right">
+                          <span className="eye-icon">
+                            <img
+                              src="assets/svg-icons/close.svg"
+                              alt="eye"
+                              className="icon"
+                            ></img>
+                          </span>
+                        </span>
+                      </span>
+                    )}
+                  </span>
+                )}
                 {cellIndex === edibleCoords.x &&
                   rowIndex === edibleCoords.y && (
                     <img
@@ -81,7 +109,7 @@ const Board = ({
                       <img
                         src="assets/svg-icons/power-up/hourglass.svg"
                         className="icon svg hourglass"
-                        alt="power-up"
+                        alt="hourglass"
                       />
                     </span>
                   )}

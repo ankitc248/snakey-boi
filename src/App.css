@@ -338,7 +338,7 @@ button:hover {
     padding: 0.75rem 1rem;
     font-size: 16px;
     justify-content: space-between;
-    min-height: 3.3rem;
+    min-height: 50px;
   }
 }
 
@@ -373,7 +373,10 @@ button:hover {
   .pause-icon {
     align-self: center;
     filter: invert(1);
-    max-width: 50px;
+    max-width: 40px;
+  }
+  .btn{
+    min-height: 40px;
   }
 }
 
@@ -640,8 +643,6 @@ button:hover {
     .power-up {
       .hourglass {
         position: absolute;
-        /* top: 0px;
-        left: 0px; */
         right: 0px;
         bottom: 0px;
         width: 15px;
@@ -812,36 +813,6 @@ button:hover {
   box-shadow: 0px 0px 8px var(--dark-black-color);
 }
 
-.board-cell.snake-head .inside-cell .snake-body::before,
-.board-cell.snake-head .inside-cell .snake-body::after {
-  content: ".";
-  position: absolute;
-  height: 100%;
-  color: var(--body-black-color);
-  top: 0px;
-  left: 50%;
-  font-size: 16px !important;
-  transform: scale(4) translate(0px, 0px);
-}
-
-.board-cell.snake-head .inside-cell .snake-body::after {
-  transform: scale(4) translate(0px, 4.5px);
-}
-
-.board-cell.snake-head.on-top .inside-cell .snake-body::before,
-.board-cell.snake-head.on-top .inside-cell .snake-body::after {
-  content: '\2715';
-  font-weight: 600;
-}
-
-.board-cell.snake-head.on-top .inside-cell .snake-body::before {
-  transform: translate(-4px, -1px);
-}
-
-.board-cell.snake-head.on-top .inside-cell .snake-body::after {
-  transform: translate(-4px, 16px);
-}
-
 .board-cell.snake-tail .inside-cell {
   width: 100%;
   display: block;
@@ -877,24 +848,6 @@ button:hover {
     height: 35px;
   }
 
-  .board-cell.snake-head .inside-cell .snake-body::before {
-    top: -8px;
-    transform: scale(4) translate(0px, 0px);
-  }
-
-  .board-cell.snake-head .inside-cell .snake-body::after {
-    top: 8px;
-    transform: scale(4) translate(0px, 0px);
-  }
-
-  .board-cell.snake-head.on-top .inside-cell .snake-body::before {
-    transform: scale(0.85) translate(-4px, 6px);
-  }
-
-  .board-cell.snake-head.on-top .inside-cell .snake-body::after {
-    transform: scale(0.85) translate(-4px, 4px);
-  }
-
 }
 
 @media (pointer: coarse) {
@@ -925,5 +878,50 @@ button:hover {
 
   50% {
     transform: translateY(-10px);
+  }
+}
+
+.snake-head {
+  .snake-body {
+    .eyes {
+      position: absolute;
+      height: 100%;
+      width: 20%;
+      right: 40%;
+      display: flex;
+      flex-direction: column;
+
+      .eye {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+
+        .eye-icon {
+          display: block;
+          aspect-ratio: 1;
+          width: 100%;
+          background-color: var(--dark-black-color);
+          border-radius: 50%;
+          .icon{
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+.game-lost .snake-head.on-top{
+  .eye-icon{
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    .icon{
+      display: block !important;
+      padding: 0;
+      max-width: 200%;
+    }
   }
 }

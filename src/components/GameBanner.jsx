@@ -118,13 +118,39 @@ const GameBanner = ({
           <h2 className="banner-title">Game over</h2>
           <span class="board-cell snake-head on-top has-snake ">
             <span class="inside-cell">
-              <span class="snake-body"></span>
+              <span class="snake-body">
+                <span className="eyes">
+                  <span className="eye left">
+                    <span className="eye-icon">
+                      <img
+                        src="assets/svg-icons/close.svg"
+                        alt="eye"
+                        className="icon"
+                      ></img>
+                    </span>
+                  </span>
+                  <span className="eye right">
+                    <span className="eye-icon">
+                      <img
+                        src="assets/svg-icons/close.svg"
+                        alt="eye"
+                        className="icon"
+                      ></img>
+                    </span>
+                  </span>
+                </span>
+              </span>
             </span>
           </span>
           <div className="banner-text">
             You grew to {snakeLength} times your original size. Needed to eat{" "}
-            {+boardSize * boardSize - snakeLength} <img src="assets/svg-icons/edible/lemon.svg" className="icon svg big-icon food-icon" alt="food" /> more to win. <br></br>Don't
-            give up!
+            {+boardSize * boardSize - snakeLength}{" "}
+            <img
+              src="assets/svg-icons/edible/lemon.svg"
+              className="icon svg big-icon food-icon"
+              alt="food"
+            />{" "}
+            more to win. <br></br>Don't give up!
           </div>
           <button
             type="button"
