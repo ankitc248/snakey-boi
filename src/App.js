@@ -350,6 +350,7 @@ function App() {
       cachedGameSettings = JSON.parse(cachedGameSettings);
       setHighscore(cachedGameSettings.highscore);
       setSpeed(cachedGameSettings.speed);
+      setMoveTimer(allSpeedsAndTimers[allSpeedsAndTimers.findIndex((item) => item.label === cachedGameSettings.speed)].timer);
     }
     if (cachedGameInfo) {
       cachedGameInfo = JSON.parse(cachedGameInfo);

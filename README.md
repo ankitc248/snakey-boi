@@ -18,5 +18,5 @@ Control the snake to eat, grow longer, and try to achieve the highest score poss
 
 ##### Credit
 
-- All icons taken from [SVGRepo](https://github.com/john-doherty/swiped-events)
+- All icons taken from [SVGRepo](https://www.svgrepo.com/)
 - [Swiped events](https://github.com/john-doherty/swiped-events) library used to easily support touchscreen controls.
