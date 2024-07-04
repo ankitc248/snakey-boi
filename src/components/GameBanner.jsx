@@ -1,9 +1,11 @@
+import { SnakeEyes } from "./Board";
 const GameBanner = ({
   gameState,
   snakeLength,
   startGame,
   resumeGame,
   boardSize,
+  totalTimePlayed,
 }) => {
   return (
     <div className={"game-banner " + gameState}>
@@ -64,7 +66,7 @@ const GameBanner = ({
           </div>
           <button
             type="button"
-            className="btn board-btn"
+            className="btn"
             onClick={() => startGame()}
             autoFocus
           >
@@ -86,7 +88,7 @@ const GameBanner = ({
           <div className="btn-group">
             <button
               type="button"
-              className="btn board-btn non-cta-btn"
+              className="btn non-cta-btn"
               onClick={() => startGame()}
               autoFocus
             >
@@ -99,7 +101,7 @@ const GameBanner = ({
             </button>
             <button
               type="button"
-              className="btn board-btn"
+              className="btn"
               onClick={() => resumeGame()}
               autoFocus
             >
@@ -116,29 +118,10 @@ const GameBanner = ({
       {gameState === "game-lost" && (
         <div className="banner-body game-lost up">
           <h2 className="banner-title">Game over</h2>
-          <span class="board-cell snake-head on-top has-snake ">
-            <span class="inside-cell">
-              <span class="snake-body">
-                <span className="eyes">
-                  <span className="eye left">
-                    <span className="eye-icon">
-                      <img
-                        src="assets/svg-icons/close.svg"
-                        alt="eye"
-                        className="icon"
-                      ></img>
-                    </span>
-                  </span>
-                  <span className="eye right">
-                    <span className="eye-icon">
-                      <img
-                        src="assets/svg-icons/close.svg"
-                        alt="eye"
-                        className="icon"
-                      ></img>
-                    </span>
-                  </span>
-                </span>
+          <span className="board-cell snake-head on-top has-snake ">
+            <span className="inside-cell">
+              <span className="snake-body">
+                <SnakeEyes />
               </span>
             </span>
           </span>
@@ -150,11 +133,18 @@ const GameBanner = ({
               className="icon svg big-icon food-icon"
               alt="food"
             />{" "}
-            more to win. <br></br>Don't give up!
+            more to win. <br></br>
+            <a
+              href="https://www.youtube.com/watch?v=KxGRhd_iWuE"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Don't give up!
+            </a>
           </div>
           <button
             type="button"
-            className="btn board-btn"
+            className="btn"
             autoFocus
             onClick={() => {
               startGame();
@@ -173,12 +163,12 @@ const GameBanner = ({
         <div className="banner-body game-won">
           <h2 className="banner-title">{WavyText("You won !")}</h2>
           <div className="banner-text">
-            You took *totalTime* to finish the game. Keep trying for a better
-            time.
+            You took {Math.ceil(Math.round(totalTimePlayed / 1000))} seconds to
+            finish the game. Keep trying for a better time.
           </div>
           <button
             type="button"
-            className="btn board-btn"
+            className="btn"
             autoFocus
             onClick={() => startGame()}
           >
@@ -194,6 +184,7 @@ const GameBanner = ({
     </div>
   );
 };
+
 const WavyText = (text) => {
   return (
     <div className="wavy-text">
@@ -212,4 +203,5 @@ const WavyText = (text) => {
     </div>
   );
 };
+
 export default GameBanner;

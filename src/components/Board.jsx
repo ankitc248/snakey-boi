@@ -1,23 +1,15 @@
 import { useEffect, useState } from "react";
 
 const Board = ({
-  size,
+  boardSize,
   edibleCoords,
   direction,
-  powerUpCoords,
   snakeMoves,
   edibleStatus,
   snakeLength,
 }) => {
-  // Create a 2D array to represent the board
-  const board = Array.from({ length: size }, () => Array(size).fill(null));
-  const powerUps = [
-    { type: "fast", iconSrc: "assets/svg-icons/power-up/running-run.svg" },
-    { type: "slow", iconSrc: "assets/svg-icons/power-up/turtle.svg" },
-    // { type: "star", iconSrc: "assets/svg-icons/power-up/star.svg" },
-  ];
-  const [powerUp, setPowerUp] = useState(
-    powerUps[Math.floor(Math.random() * powerUps.length)]
+  const board = Array.from({ length: boardSize }, () =>
+    Array(boardSize).fill(null)
   );
   const [edible, setEdible] = useState();
   useEffect(() => {
@@ -28,6 +20,170 @@ const Board = ({
     ];
     setEdible(edibles[Math.floor(Math.random() * edibles.length)]);
   }, [snakeLength, setEdible]);
+  const calculateBend = (x, y) => {
+    if (snakeLength < 2) return "";
+
+    const wrap = (coord, max) => (coord + max) % max;
+
+    const currPos = { x, y };
+    const currPosIndex = snakeMoves.findIndex(
+      (move) => move.x === x && move.y === y
+    );
+
+    if (
+      currPosIndex === -1 ||
+      currPosIndex === 0 ||
+      currPosIndex === snakeMoves.length - 1
+    )
+      return "";
+
+    const prevPos = snakeMoves[currPosIndex - 1];
+    const nextPos = snakeMoves[currPosIndex + 1];
+
+    const prevPosWrapped = {
+      x: wrap(prevPos.x, boardSize),
+      y: wrap(prevPos.y, boardSize),
+    };
+    const nextPosWrapped = {
+      x: wrap(nextPos.x, boardSize),
+      y: wrap(nextPos.y, boardSize),
+    };
+
+    const isBendTopRight =
+      (prevPosWrapped.x === wrap(currPos.x - 1, boardSize) &&
+        nextPosWrapped.y === wrap(currPos.y + 1, boardSize)) ||
+      (prevPosWrapped.y === wrap(currPos.y + 1, boardSize) &&
+        nextPosWrapped.x === wrap(currPos.x - 1, boardSize)) ||
+      (nextPosWrapped.x === wrap(currPos.x - 1, boardSize) &&
+        prevPosWrapped.y === 0 &&
+        currPos.y === boardSize - 1) ||
+      (currPos.x === 0 &&
+        prevPosWrapped.y === wrap(currPos.y + 1, boardSize) &&
+        nextPosWrapped.x === boardSize - 1);
+
+    const isBendBottomRight =
+      (prevPosWrapped.y === wrap(currPos.y - 1, boardSize) &&
+        nextPosWrapped.x === wrap(currPos.x - 1, boardSize)) ||
+      (prevPosWrapped.x === wrap(currPos.x - 1, boardSize) &&
+        nextPosWrapped.y === wrap(currPos.y - 1, boardSize)) ||
+      (prevPosWrapped.y === boardSize - 1 &&
+        nextPosWrapped.x === wrap(currPos.x - 1, boardSize) &&
+        currPos.y === 0) ||
+      (prevPosWrapped.x === boardSize - 1 &&
+        nextPosWrapped.y === wrap(currPos.y - 1, boardSize) &&
+        currPos.x === 0);
+
+    const isBendBottomLeft =
+      (prevPosWrapped.x === wrap(currPos.x + 1, boardSize) &&
+        nextPosWrapped.y === wrap(currPos.y - 1, boardSize)) ||
+      (prevPosWrapped.y === wrap(currPos.y - 1, boardSize) &&
+        nextPosWrapped.x === wrap(currPos.x + 1, boardSize)) ||
+      (prevPosWrapped.x === 0 &&
+        nextPosWrapped.y === wrap(currPos.y - 1, boardSize) &&
+        currPos.x === boardSize - 1) ||
+      (prevPosWrapped.x === wrap(currPos.x + 1, boardSize) &&
+        nextPosWrapped.y === boardSize - 1 &&
+        currPos.y === 0);
+
+    const isBendTopLeft =
+      (prevPosWrapped.y === wrap(currPos.y + 1, boardSize) &&
+        nextPosWrapped.x === wrap(currPos.x + 1, boardSize)) ||
+      (prevPosWrapped.x === wrap(currPos.x + 1, boardSize) &&
+        nextPosWrapped.y === wrap(currPos.y + 1, boardSize)) ||
+      (prevPosWrapped.x === wrap(currPos.x + 1, boardSize) &&
+        nextPosWrapped.y === 0 &&
+        currPos.y === boardSize - 1) ||
+      (currPos.x === boardSize - 1 &&
+        nextPosWrapped.x === 0 &&
+        prevPosWrapped.y === wrap(currPos.y + 1, boardSize));
+
+    if (isBendTopRight) return "bend-top-right";
+    if (isBendBottomRight) return "bend-bottom-right";
+    if (isBendBottomLeft) return "bend-bottom-left";
+    if (isBendTopLeft) return "bend-top-left";
+
+    return "";
+  };
+  const calculateTail = (x, y) => {
+    if (snakeLength < 2) return "";
+    const currPosIndex = snakeMoves.findIndex(
+      (move) => move.x === x && move.y === y
+    );
+    if (currPosIndex === -1) return "";
+    if (currPosIndex === 0) {
+      return "tail " + calculateTailDirection();
+    }
+    return "";
+  };
+  const calculateTailDirection = () => {
+    const wrap = (coord, max) => (coord + max) % max;
+    const [tailPos, nextToTailPos] = [snakeMoves[0], snakeMoves[1]];
+
+    const tailPosWrapped = {
+      x: wrap(tailPos.x, boardSize),
+      y: wrap(tailPos.y, boardSize),
+    };
+    const nextToTailPosWrapped = {
+      x: wrap(nextToTailPos.x, boardSize),
+      y: wrap(nextToTailPos.y, boardSize),
+    };
+
+    if (
+      (nextToTailPosWrapped.x === wrap(tailPosWrapped.x - 1, boardSize) &&
+        nextToTailPosWrapped.y === tailPosWrapped.y) ||
+      (tailPosWrapped.x === 0 &&
+        nextToTailPosWrapped.x === boardSize - 1 &&
+        nextToTailPosWrapped.y === tailPosWrapped.y)
+    )
+      return "tail-left";
+
+    if (
+      (nextToTailPosWrapped.x === wrap(tailPosWrapped.x + 1, boardSize) &&
+        nextToTailPosWrapped.y === tailPosWrapped.y) ||
+      (tailPosWrapped.x === boardSize - 1 &&
+        nextToTailPosWrapped.x === 0 &&
+        nextToTailPosWrapped.y === tailPosWrapped.y)
+    )
+      return "tail-right";
+
+    if (
+      (nextToTailPosWrapped.y === wrap(tailPosWrapped.y - 1, boardSize) &&
+        nextToTailPosWrapped.x === tailPosWrapped.x) ||
+      (tailPosWrapped.y === 0 &&
+        nextToTailPosWrapped.y === boardSize - 1 &&
+        nextToTailPosWrapped.x === tailPosWrapped.x)
+    )
+      return "tail-up";
+
+    if (
+      (nextToTailPosWrapped.y === wrap(tailPosWrapped.y + 1, boardSize) &&
+        nextToTailPosWrapped.x === tailPosWrapped.x) ||
+      (tailPosWrapped.y === boardSize - 1 &&
+        nextToTailPosWrapped.y === 0 &&
+        nextToTailPosWrapped.x === tailPosWrapped.x)
+    )
+      return "tail-down";
+
+    return "";
+  };
+  const getCellClassNames = (x, y) => {
+    const isEdible = x === edibleCoords.x && y === edibleCoords.y;
+    const snakeHeadIndex = snakeMoves.findIndex(
+      (move) => move.x === x && move.y === y
+    );
+    const snakeHeadOnTop =
+      snakeMoves.findLastIndex((move) => move.x === x && move.y === y) ===
+      snakeMoves.length - 1;
+    const hasSnake = snakeMoves.some((move) => move.x === x && move.y === y);
+
+    return `${edibleStatus} ${isEdible ? "has-edible " : ""}${
+      snakeHeadIndex === snakeMoves.length - 1 ? "snake-head " : ""
+    }${
+      snakeHeadIndex !== snakeMoves.length - 1 && snakeHeadOnTop
+        ? "snake-head on-top "
+        : ""
+    }${hasSnake ? "has-snake " : ""}`;
+  };
   return (
     <div className={"board " + direction}>
       {board.map((row, rowIndex) => (
@@ -35,29 +191,13 @@ const Board = ({
           {row.map((cell, cellIndex) => (
             <span
               key={cellIndex}
-              className={`board-cell ${getCellClassName(
-                cellIndex,
-                rowIndex,
-                edibleCoords,
-                powerUpCoords,
-                snakeMoves,
-                edibleStatus
-              )}`}
+              className={`board-cell ${getCellClassNames(cellIndex, rowIndex)}`}
             >
               <span
                 className={`inside-cell ${calculateBend(
                   cellIndex,
-                  rowIndex,
-                  snakeMoves,
-                  snakeLength,
-                  size
-                )} ${calculateTail(
-                  cellIndex,
-                  rowIndex,
-                  snakeMoves,
-                  snakeLength,
-                  size
-                )}`}
+                  rowIndex
+                )} ${calculateTail(cellIndex, rowIndex)}`}
               >
                 {snakeMoves.some(
                   (move) => move.x === cellIndex && move.y === rowIndex
@@ -66,28 +206,7 @@ const Board = ({
                     {snakeMoves.findLastIndex(
                       (move) => move.x === cellIndex && move.y === rowIndex
                     ) ===
-                      snakeMoves.length - 1 && (
-                      <span className="eyes">
-                        <span className="eye left">
-                          <span className="eye-icon">
-                            <img
-                              src="assets/svg-icons/close.svg"
-                              alt="eye"
-                              className="icon"
-                            ></img>
-                          </span>
-                        </span>
-                        <span className="eye right">
-                          <span className="eye-icon">
-                            <img
-                              src="assets/svg-icons/close.svg"
-                              alt="eye"
-                              className="icon"
-                            ></img>
-                          </span>
-                        </span>
-                      </span>
-                    )}
+                      snakeMoves.length - 1 && <SnakeEyes />}
                   </span>
                 )}
                 {cellIndex === edibleCoords.x &&
@@ -98,21 +217,6 @@ const Board = ({
                       alt="edible"
                     />
                   )}
-                {cellIndex === powerUpCoords.x &&
-                  rowIndex === powerUpCoords.y && (
-                    <span className="power-up">
-                      <img
-                        src={powerUp.iconSrc}
-                        className="icon svg power-up-icon"
-                        alt="power-up"
-                      />
-                      <img
-                        src="assets/svg-icons/power-up/hourglass.svg"
-                        className="icon svg hourglass"
-                        alt="hourglass"
-                      />
-                    </span>
-                  )}
               </span>
             </span>
           ))}
@@ -122,173 +226,29 @@ const Board = ({
   );
 };
 
-const calculateBend = (x, y, snakeMoves, snakeLength, size) => {
-  if (snakeLength < 2) return "";
-
-  const wrap = (coord, max) => (coord + max) % max;
-
-  const currPos = { x, y };
-  const currPosIndex = snakeMoves.findIndex(
-    (move) => move.x === x && move.y === y
+export const SnakeEyes = () => {
+  return (
+    <span className="eyes">
+      <span className="eye left">
+        <span className="eye-icon">
+          <img
+            src="assets/svg-icons/close.svg"
+            alt="eye"
+            className="icon"
+          ></img>
+        </span>
+      </span>
+      <span className="eye right">
+        <span className="eye-icon">
+          <img
+            src="assets/svg-icons/close.svg"
+            alt="eye"
+            className="icon"
+          ></img>
+        </span>
+      </span>
+    </span>
   );
-
-  if (
-    currPosIndex === -1 ||
-    currPosIndex === 0 ||
-    currPosIndex === snakeMoves.length - 1
-  )
-    return "";
-
-  const prevPos = snakeMoves[currPosIndex - 1];
-  const nextPos = snakeMoves[currPosIndex + 1];
-
-  const prevPosWrapped = { x: wrap(prevPos.x, size), y: wrap(prevPos.y, size) };
-  const nextPosWrapped = { x: wrap(nextPos.x, size), y: wrap(nextPos.y, size) };
-
-  const isBendTopRight =
-    (prevPosWrapped.x === wrap(currPos.x - 1, size) &&
-      nextPosWrapped.y === wrap(currPos.y + 1, size)) ||
-    (prevPosWrapped.y === wrap(currPos.y + 1, size) &&
-      nextPosWrapped.x === wrap(currPos.x - 1, size)) ||
-    (nextPosWrapped.x === wrap(currPos.x - 1, size) &&
-      prevPosWrapped.y === 0 &&
-      currPos.y === size - 1) ||
-    (currPos.x === 0 &&
-      prevPosWrapped.y === wrap(currPos.y + 1, size) &&
-      nextPosWrapped.x === size - 1);
-
-  const isBendBottomRight =
-    (prevPosWrapped.y === wrap(currPos.y - 1, size) &&
-      nextPosWrapped.x === wrap(currPos.x - 1, size)) ||
-    (prevPosWrapped.x === wrap(currPos.x - 1, size) &&
-      nextPosWrapped.y === wrap(currPos.y - 1, size)) ||
-    (prevPosWrapped.y === size - 1 &&
-      nextPosWrapped.x === wrap(currPos.x - 1, size) &&
-      currPos.y === 0) ||
-    (prevPosWrapped.x === size - 1 &&
-      nextPosWrapped.y === wrap(currPos.y - 1, size) &&
-      currPos.x === 0);
-
-  const isBendBottomLeft =
-    (prevPosWrapped.x === wrap(currPos.x + 1, size) &&
-      nextPosWrapped.y === wrap(currPos.y - 1, size)) ||
-    (prevPosWrapped.y === wrap(currPos.y - 1, size) &&
-      nextPosWrapped.x === wrap(currPos.x + 1, size)) ||
-    (prevPosWrapped.x === 0 &&
-      nextPosWrapped.y === wrap(currPos.y - 1, size) &&
-      currPos.x === size - 1) ||
-    (prevPosWrapped.x === wrap(currPos.x + 1, size) &&
-      nextPosWrapped.y === size - 1 &&
-      currPos.y === 0);
-
-  const isBendTopLeft =
-    (prevPosWrapped.y === wrap(currPos.y + 1, size) &&
-      nextPosWrapped.x === wrap(currPos.x + 1, size)) ||
-    (prevPosWrapped.x === wrap(currPos.x + 1, size) &&
-      nextPosWrapped.y === wrap(currPos.y + 1, size)) ||
-    (prevPosWrapped.x === wrap(currPos.x + 1, size) &&
-      nextPosWrapped.y === 0 &&
-      currPos.y === size - 1) ||
-    (currPos.x === size - 1 &&
-      nextPosWrapped.x === 0 &&
-      prevPosWrapped.y === wrap(currPos.y + 1, size));
-
-  if (isBendTopRight) return "bend-top-right";
-  if (isBendBottomRight) return "bend-bottom-right";
-  if (isBendBottomLeft) return "bend-bottom-left";
-  if (isBendTopLeft) return "bend-top-left";
-
-  return "";
-};
-const calculateTail = (x, y, snakeMoves, snakeLength, size) => {
-  if (snakeLength < 2) return "";
-  const currPosIndex = snakeMoves.findIndex(
-    (move) => move.x === x && move.y === y
-  );
-  if (currPosIndex === -1) return "";
-  if (currPosIndex === 0) {
-    return "tail " + calculateTailDirection(snakeMoves, size);
-  }
-  return "";
 };
 
-const calculateTailDirection = (snakeMoves, size) => {
-  const wrap = (coord, max) => (coord + max) % max;
-  const [tailPos, nextToTailPos] = [snakeMoves[0], snakeMoves[1]];
-
-  const tailPosWrapped = { x: wrap(tailPos.x, size), y: wrap(tailPos.y, size) };
-  const nextToTailPosWrapped = {
-    x: wrap(nextToTailPos.x, size),
-    y: wrap(nextToTailPos.y, size),
-  };
-
-  if (
-    (nextToTailPosWrapped.x === wrap(tailPosWrapped.x - 1, size) &&
-      nextToTailPosWrapped.y === tailPosWrapped.y) ||
-    (tailPosWrapped.x === 0 &&
-      nextToTailPosWrapped.x === size - 1 &&
-      nextToTailPosWrapped.y === tailPosWrapped.y)
-  )
-    return "tail-left";
-
-  if (
-    (nextToTailPosWrapped.x === wrap(tailPosWrapped.x + 1, size) &&
-      nextToTailPosWrapped.y === tailPosWrapped.y) ||
-    (tailPosWrapped.x === size - 1 &&
-      nextToTailPosWrapped.x === 0 &&
-      nextToTailPosWrapped.y === tailPosWrapped.y)
-  )
-    return "tail-right";
-
-  if (
-    (nextToTailPosWrapped.y === wrap(tailPosWrapped.y - 1, size) &&
-      nextToTailPosWrapped.x === tailPosWrapped.x) ||
-    (tailPosWrapped.y === 0 &&
-      nextToTailPosWrapped.y === size - 1 &&
-      nextToTailPosWrapped.x === tailPosWrapped.x)
-  )
-    return "tail-up";
-
-  if (
-    (nextToTailPosWrapped.y === wrap(tailPosWrapped.y + 1, size) &&
-      nextToTailPosWrapped.x === tailPosWrapped.x) ||
-    (tailPosWrapped.y === size - 1 &&
-      nextToTailPosWrapped.y === 0 &&
-      nextToTailPosWrapped.x === tailPosWrapped.x)
-  )
-    return "tail-down";
-
-  return "";
-};
-const getCellClassName = (
-  cellIndex,
-  rowIndex,
-  edibleCoords,
-  powerUpCoords,
-  snakeMoves,
-  edibleStatus
-) => {
-  const isEdible = cellIndex === edibleCoords.x && rowIndex === edibleCoords.y;
-  const hasPowerUp =
-    cellIndex === powerUpCoords.x && rowIndex === powerUpCoords.y;
-  const snakeHeadIndex = snakeMoves.findIndex(
-    (move) => move.x === cellIndex && move.y === rowIndex
-  );
-  const snakeHeadOnTop =
-    snakeMoves.findLastIndex(
-      (move) => move.x === cellIndex && move.y === rowIndex
-    ) ===
-    snakeMoves.length - 1;
-  const hasSnake = snakeMoves.some(
-    (move) => move.x === cellIndex && move.y === rowIndex
-  );
-
-  return `${edibleStatus} ${isEdible ? "has-edible " : ""}${
-    hasPowerUp ? "has-power-up " : ""
-  }${snakeHeadIndex === snakeMoves.length - 1 ? "snake-head " : ""}${
-    snakeHeadIndex !== snakeMoves.length - 1 && snakeHeadOnTop
-      ? "snake-head on-top "
-      : ""
-  }${hasSnake ? "has-snake " : ""}`;
-};
 export default Board;

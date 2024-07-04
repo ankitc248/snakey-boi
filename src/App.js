@@ -1,15 +1,21 @@
 import "./App.css";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Board from "./components/Board";
 import GameBanner from "./components/GameBanner";
 import UserControls from "./components/UserControls";
+import TopBar from "./components/TopBar";
+import MiniGameBanner from "./components/MiniGameBanner";
+
+var totalTimePlayed = 0;
+const allSpeeds = ["slow", "normal", "fast", "super sonic"];
 function App() {
   useEffect(() => {
     let cachedGameInfo = localStorage.getItem("snakey-boi-info");
-    let cachedHighscore = localStorage.getItem("snakey-boi-highscore");
-    if (cachedHighscore) {
-      cachedHighscore = JSON.parse(cachedHighscore);
-      setHighscore(cachedHighscore.highscore);
+    let cachedGameSettings = localStorage.getItem("snakey-boi-settings");
+    if (cachedGameSettings) {
+      cachedGameSettings = JSON.parse(cachedGameSettings);
+      setHighscore(cachedGameSettings.highscore);
+      setSpeed(cachedGameSettings.speed);
     }
     if (cachedGameInfo) {
       cachedGameInfo = JSON.parse(cachedGameInfo);
@@ -18,6 +24,7 @@ function App() {
       setDirection(cachedGameInfo.direction);
       setSnakeMoves(cachedGameInfo.snakeMoves);
       setGameState("continue");
+      totalTimePlayed = cachedGameInfo.totalTimePlayed;
       if (
         cachedGameInfo.edibleCoords.x < 0 ||
         cachedGameInfo.edibleCoords.y < 0
@@ -32,17 +39,17 @@ function App() {
   }, []);
   const snakeMoveInterval = useRef(null);
   const trafficLights = useRef(null);
-  const allSpeeds = ["normal", "fast", "super-sonic"];
+
+  //ALL STATES
   const [highscore, setHighscore] = useState(1);
   const [edibleStatus, setEdibleStatus] = useState("");
   const [lastPosition, setLastPosition] = useState();
-  const [boardSize, setBoardSize] = useState(9);
+  const [boardSize] = useState(9);
   const [snakeLength, setSnakeLength] = useState(10);
   const [direction, setDirection] = useState("up");
-  const [speed, setSpeed] = useState(allSpeeds[1]);
+  const [speed, setSpeed] = useState(allSpeeds[2]);
   const [moveTimer, setMoveTimer] = useState(1000);
   const [edibleCoords, setEdibleCoords] = useState({});
-  const [powerUpCoords, setPowerUpCoords] = useState({});
   const [snakeMoves, setSnakeMoves] = useState([]);
   const [gameState, setGameState] = useState("");
 
@@ -52,22 +59,26 @@ function App() {
       snakeLength: snakeLength,
       direction: direction,
       snakeMoves: snakeMoves,
+      totalTimePlayed: totalTimePlayed,
     };
     if (gameInfo.snakeLength > 1)
       localStorage.setItem("snakey-boi-info", JSON.stringify(gameInfo));
     localStorage.setItem(
-      "snakey-boi-highscore",
-      JSON.stringify({ highscore: highscore })
+      "snakey-boi-settings",
+      JSON.stringify({ highscore: highscore, speed: speed })
     );
-  }, [highscore, edibleCoords, snakeLength, direction, snakeMoves]);
+  }, [highscore, edibleCoords, snakeLength, direction, snakeMoves, speed]);
 
   useEffect(() => {
+    const allSpeedsTimers = [150, 100, 50, 20];
     if (speed === "slow") {
-      setMoveTimer(600);
+      setMoveTimer(allSpeedsTimers[0]);
     } else if (speed === "normal") {
-      setMoveTimer(300);
+      setMoveTimer(allSpeedsTimers[1]);
     } else if (speed === "fast") {
-      setMoveTimer(100);
+      setMoveTimer(allSpeedsTimers[2]);
+    } else if (speed === "super sonic") {
+      setMoveTimer(allSpeedsTimers[3]);
     }
   }, [speed]);
 
@@ -97,26 +108,15 @@ function App() {
         setGameState(type);
         localStorage.removeItem("snakey-boi-info");
         localStorage.setItem(
-          "snakey-boi-highscore",
+          "snakey-boi-settings",
           JSON.stringify({ highscore: highscore })
         );
       }, 3000);
     },
     [highscore]
   );
-  const startGame = () => {
-    localStorage.removeItem("snakey-boi-info");
-    setDirection("up");
-    setSnakeLength(1);
-    setSnakeMoves([
-      { x: Math.floor(boardSize / 2), y: Math.floor(boardSize / 2) },
-    ]);
-    // setPowerUpCoords(generateRandomCoordsforItems());
-    setEdibleCoords(generateRandomCoordsforItems());
-    setEdibleStatus("");
-    resumeGame();
-  };
-  const generateRandomCoordsforItems = () => {
+
+  const generateRandomCoordsforItems = useCallback(() => {
     let randomCoords = {
       x: Math.floor(Math.random() * boardSize),
       y: Math.floor(Math.random() * boardSize),
@@ -126,15 +126,35 @@ function App() {
         (snakeMove) =>
           snakeMove.x === randomCoords.x && snakeMove.y === randomCoords.y
       ) ||
-      (powerUpCoords.x === randomCoords.x &&
-        powerUpCoords.y === randomCoords.y) ||
       (edibleCoords.x === randomCoords.x && edibleCoords.y === randomCoords.y)
     ) {
       return generateRandomCoordsforItems();
     } else {
       return randomCoords;
     }
-  };
+  }, [boardSize, snakeMoves, edibleCoords]);
+
+  const startGame = useCallback(() => {
+    localStorage.removeItem("snakey-boi-info");
+    setDirection("up");
+    setSnakeLength(1);
+    setSnakeMoves([
+      { x: Math.floor(boardSize / 2), y: Math.floor(boardSize / 2) },
+    ]);
+    setEdibleCoords(generateRandomCoordsforItems());
+    setEdibleStatus("");
+    resumeGame();
+  }, [
+    resumeGame,
+    boardSize,
+    setEdibleCoords,
+    setEdibleStatus,
+    setSnakeMoves,
+    setSnakeLength,
+    setDirection,
+    generateRandomCoordsforItems,
+  ]);
+
   const newSnakeHeadCoords = useCallback(
     (snakeHeadCoords) => {
       switch (direction) {
@@ -183,18 +203,9 @@ function App() {
         setEdibleStatus("");
       }, 300);
     }
-    if (
-      snakeHeadPosition.x === powerUpCoords.x &&
-      snakeHeadPosition.y === powerUpCoords.y
-    ) {
-      setEdibleStatus("eaten");
-      setPowerUpCoords({ x: -1, y: -1 });
-      setTimeout(() => {
-        setPowerUpCoords(generateRandomCoordsforItems());
-      }, 1000);
-    }
   };
   checkSnakeMoves();
+
   const handleDirectionChange = useCallback(
     (direction) => {
       if (gameState !== "playing") return;
@@ -257,7 +268,7 @@ function App() {
         setDirection(direction);
       }
     },
-    [gameState, snakeLength, snakeMoves, setDirection]
+    [gameState, snakeLength, snakeMoves, setDirection, boardSize]
   );
 
   useEffect(() => {
@@ -280,7 +291,6 @@ function App() {
     };
     document.addEventListener("keyup", handleKeyUp);
     const handleSwipe = (e) => {
-      console.log(e.detail);
       if (e.detail.fingers === 1) {
         if (e.detail.dir === "up") handleDirectionChange("up");
         else if (e.detail.dir === "down") handleDirectionChange("down");
@@ -305,6 +315,7 @@ function App() {
   useEffect(() => {
     const moveSnake = () => {
       if (gameState === "playing") {
+        totalTimePlayed += moveTimer;
         let snakeHeadCoords = snakeMoves[snakeMoves.length - 1];
         setLastPosition(snakeMoves[0]);
         let newCoords = newSnakeHeadCoords(snakeHeadCoords);
@@ -339,6 +350,7 @@ function App() {
     storeGameInfoInCache,
     endGame,
   ]);
+  
   //Window loses focus event listener
   useEffect(() => {
     const handleBlur = () => {
@@ -352,119 +364,59 @@ function App() {
     };
   }, [gameState]);
 
+  //Combined props to pass to components
+  const combinedProps = useMemo(
+    () => ({
+      boardSize,
+      snakeMoves,
+      direction,
+      snakeLength,
+      edibleCoords,
+      edibleStatus,
+      gameState,
+      startGame,
+      resumeGame,
+      totalTimePlayed,
+      speed,
+      allSpeeds,
+      setSpeed,
+      highscore,
+      setGameState,
+      handleDirectionChange,
+    }),
+    [
+      boardSize,
+      snakeMoves,
+      direction,
+      snakeLength,
+      gameState,
+      startGame,
+      resumeGame,
+      speed,
+      highscore,
+      setGameState,
+      handleDirectionChange,
+      setSpeed,
+      edibleCoords,
+      edibleStatus,
+    ]
+  );
+
   return (
     <div className={`App ${gameState}`}>
       <div className="middle-container">
-        <GameBanner
-          gameState={gameState}
-          setGameState={setGameState}
-          snakeLength={snakeLength}
-          startGame={startGame}
-          boardSize={boardSize}
-          resumeGame={resumeGame}
-        />
-        <div className="top-bar">
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              if (gameState === "playing") {
-                setGameState("paused");
-              } else if (gameState === "paused") {
-                resumeGame();
-              }
-            }}
-          >
-            {gameState === "playing" ? (
-              <img
-                src="assets/svg-icons/pause.svg"
-                className="icon svg"
-                alt="pause"
-              />
-            ) : (
-              <img
-                src="assets/svg-icons/play.svg"
-                className="icon svg"
-                alt="play"
-              />
-            )}
-          </button>
-          <div
-            className={`setting-container highscore ${
-              snakeLength >= highscore ? "new" : ""
-            }`}
-          >
-            <h6 className="setting-name">
-              <span className="new-text">NEW</span> Highscore
-            </h6>
-            <div className="setting-controls">
-              <span className="value">
-                {highscore}
-                <img
-                  src="assets/svg-icons/edible/lemon.svg"
-                  className="icon svg big-icon"
-                  alt="asterisk"
-                />
-              </span>
-            </div>
-          </div>
-          <button type="button" className="btn">
-            <img
-              src="assets/svg-icons/gear.svg"
-              className="icon svg big-icon"
-              alt="stop"
-            />
-          </button>
-        </div>
+        <GameBanner {...combinedProps} />
+        <TopBar {...combinedProps} />
         <div className="board-container">
-          <div className="game-banner mini">
-            {gameState === "paused" && (
-              <div className="banner-body paused">
-                <h2 className="banner-title">Paused</h2>
-                <img
-                  src="assets/svg-icons/pause.svg"
-                  className="icon svg pause-icon"
-                  alt="pause"
-                />
-                <button
-                  type="button"
-                  className="btn board-btn"
-                  onClick={() => resumeGame()}
-                  autoFocus
-                >
-                  Resume
-                  <img
-                    src="assets/svg-icons/play.svg"
-                    className="icon svg"
-                    alt="play"
-                  />
-                </button>
-              </div>
-            )}
-          </div>
-          <Board
-            size={boardSize}
-            direction={direction}
-            edibleCoords={edibleCoords}
-            powerUpCoords={powerUpCoords}
-            snakeMoves={snakeMoves}
-            edibleStatus={edibleStatus}
-            snakeLength={snakeLength}
-            gameState={gameState}
-            setGameState={setGameState}
-          />
+          <MiniGameBanner {...combinedProps} />
+          <Board {...combinedProps} />
           <div className="traffic-lights" ref={trafficLights}>
             <span className="traffic-light red"></span>
             <span className="traffic-light orange"></span>
             <span className="traffic-light green"></span>
           </div>
         </div>
-        <UserControls
-          gameState={gameState}
-          setGameState={setGameState}
-          direction={direction}
-          handleDirectionChange={handleDirectionChange}
-        />
+        <UserControls {...combinedProps} />
       </div>
     </div>
   );

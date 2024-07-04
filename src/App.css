@@ -262,7 +262,8 @@ button:hover {
 }
 
 .paused .game-banner,
-.game-ended .game-banner {
+.game-ended .game-banner,
+.settings .game-banner {
   left: 100%;
 }
 
@@ -378,11 +379,15 @@ button:hover {
   .btn{
     min-height: 40px;
   }
+  .setting-container{
+    align-self: center;
+  }
 }
 
-.paused .game-banner.mini {
+.paused .game-banner.mini,.settings .game-banner.mini {
   display: flex;
   justify-content: center;
+  left: 0px;
 }
 
 .help-info {
@@ -465,7 +470,7 @@ button:hover {
   align-items: center;
 
   .btn {
-    box-shadow: 0px 4px 0px var(--light-black-color);
+    box-shadow: 0px 6px 0px var(--light-black-color);
     /* outline-offset: 0px; */
   }
 
@@ -620,7 +625,9 @@ button:hover {
 .game-lost .board .inside-cell {
   --green-color: var(--white-font-color);
 }
-
+.game-lost .inside-cell{
+  box-shadow: none !important;
+}
 .board-cell {
   display: flex;
   background-color: transparent;
@@ -789,11 +796,13 @@ button:hover {
   width: 100%;
   display: block;
   background-color: var(--green-color);
+  box-shadow: 4px 0px 8px var(--light-black-color);
   /* background-color: var(--yellow-color); */
 }
 
 .board-cell.snake-head .inside-cell {
   background-color: transparent;
+  border-radius: 0 !important;
 }
 
 .board-cell.snake-head .inside-cell .snake-body {
@@ -824,19 +833,19 @@ button:hover {
 }
 
 .up .snake-head .inside-cell {
-  rotate: -90deg;
+  rotate: -90deg !important;
 }
 
 .left .snake-head .inside-cell {
-  rotate: 180deg;
+  rotate: 180deg !important;
 }
 
 .right .snake-head .inside-cell {
-  rotate: 0deg;
+  rotate: 0deg !important;
 }
 
 .down .snake-head .inside-cell {
-  rotate: 90deg;
+  rotate: 90deg !important;
 }
 
 /* .board-cell.has-edible .inside-cell,
@@ -924,4 +933,9 @@ button:hover {
       max-width: 200%;
     }
   }
+}
+.speed-size-setting.warning{
+  border-radius: 2px;
+  outline: solid 3px var(--red-color);
+  outline-offset:8px;
 }
