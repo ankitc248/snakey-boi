@@ -12,7 +12,13 @@ const GameBanner = ({
       {gameState === "not-started" && (
         <div className="banner-body not-started">
           <h2 className="banner-title">{WavyText("Snakey Boi")}</h2>
-          <img src="snake.svg" className="icon svg logo" alt="snake" />
+          <img
+            src="snake.svg"
+            className="icon svg logo"
+            alt="snake"
+            width={100}
+            height={100}
+          />
           <div className="help-info">
             <h1>Control snake</h1>
             <div className="keys wasd">
@@ -163,8 +169,11 @@ const GameBanner = ({
         <div className="banner-body game-won">
           <h2 className="banner-title">{WavyText("You won !")}</h2>
           <div className="banner-text">
-            You took {Math.ceil(Math.round(totalTimePlayed / 1000))} seconds to
-            finish the game. Keep trying for a better time.
+            You took{" "}
+            <span className="total-time">
+              {prettyTime(totalTimePlayed.current)}
+            </span>{" "}
+            to finish the game. Keep trying for a better time.
           </div>
           <button
             type="button"
@@ -202,6 +211,13 @@ const WavyText = (text) => {
       ))}
     </div>
   );
+};
+const prettyTime = (milliseconds) => {
+  let totalSeconds = Math.floor(milliseconds / 1000);
+  let minutes = Math.floor(totalSeconds / 60);
+  let seconds = totalSeconds % 60;
+  let formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
+  return `${minutes}:${formattedSeconds}`;
 };
 
 export default GameBanner;

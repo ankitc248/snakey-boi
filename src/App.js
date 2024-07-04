@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Board from "./components/Board";
 import GameBanner from "./components/GameBanner";
 import UserControls from "./components/UserControls";
@@ -7,39 +7,16 @@ import TopBar from "./components/TopBar";
 import MiniGameBanner from "./components/MiniGameBanner";
 
 var totalTimePlayed = 0;
-const allSpeeds = ["slow", "normal", "fast", "super sonic"];
+const allSpeedsAndTimers = [
+  { label: "slow", timer: 150 },
+  { label: "normal", timer: 100 },
+  { label: "fast", timer: 50 },
+  { label: "super sonic", timer: 20 },
+];
 function App() {
-  useEffect(() => {
-    let cachedGameInfo = localStorage.getItem("snakey-boi-info");
-    let cachedGameSettings = localStorage.getItem("snakey-boi-settings");
-    if (cachedGameSettings) {
-      cachedGameSettings = JSON.parse(cachedGameSettings);
-      setHighscore(cachedGameSettings.highscore);
-      setSpeed(cachedGameSettings.speed);
-    }
-    if (cachedGameInfo) {
-      cachedGameInfo = JSON.parse(cachedGameInfo);
-      if (cachedGameInfo.snakeLength <= 1) return;
-      setSnakeLength(cachedGameInfo.snakeLength);
-      setDirection(cachedGameInfo.direction);
-      setSnakeMoves(cachedGameInfo.snakeMoves);
-      setGameState("continue");
-      totalTimePlayed = cachedGameInfo.totalTimePlayed;
-      if (
-        cachedGameInfo.edibleCoords.x < 0 ||
-        cachedGameInfo.edibleCoords.y < 0
-      ) {
-        setEdibleCoords(generateRandomCoordsforItems());
-      } else {
-        setEdibleCoords(cachedGameInfo.edibleCoords);
-      }
-    } else {
-      setGameState("not-started");
-    }
-  }, []);
   const snakeMoveInterval = useRef(null);
   const trafficLights = useRef(null);
-
+  const totalTimeRef = useRef(totalTimePlayed);
   //ALL STATES
   const [highscore, setHighscore] = useState(1);
   const [edibleStatus, setEdibleStatus] = useState("");
@@ -47,12 +24,13 @@ function App() {
   const [boardSize] = useState(9);
   const [snakeLength, setSnakeLength] = useState(10);
   const [direction, setDirection] = useState("up");
-  const [speed, setSpeed] = useState(allSpeeds[2]);
-  const [moveTimer, setMoveTimer] = useState(1000);
+  const [speed, setSpeed] = useState(allSpeedsAndTimers[2].label);
+  const [moveTimer, setMoveTimer] = useState(allSpeedsAndTimers[2].timer);
   const [edibleCoords, setEdibleCoords] = useState({});
   const [snakeMoves, setSnakeMoves] = useState([]);
   const [gameState, setGameState] = useState("");
 
+  //FUNCTION DECLARATIONS
   const storeGameInfoInCache = useCallback(() => {
     let gameInfo = {
       edibleCoords: edibleCoords,
@@ -68,19 +46,6 @@ function App() {
       JSON.stringify({ highscore: highscore, speed: speed })
     );
   }, [highscore, edibleCoords, snakeLength, direction, snakeMoves, speed]);
-
-  useEffect(() => {
-    const allSpeedsTimers = [150, 100, 50, 20];
-    if (speed === "slow") {
-      setMoveTimer(allSpeedsTimers[0]);
-    } else if (speed === "normal") {
-      setMoveTimer(allSpeedsTimers[1]);
-    } else if (speed === "fast") {
-      setMoveTimer(allSpeedsTimers[2]);
-    } else if (speed === "super sonic") {
-      setMoveTimer(allSpeedsTimers[3]);
-    }
-  }, [speed]);
 
   const resumeGame = useCallback(() => {
     setGameState("resuming");
@@ -109,11 +74,11 @@ function App() {
         localStorage.removeItem("snakey-boi-info");
         localStorage.setItem(
           "snakey-boi-settings",
-          JSON.stringify({ highscore: highscore })
+          JSON.stringify({ highscore: highscore, speed: speed })
         );
       }, 3000);
     },
-    [highscore]
+    [highscore, speed]
   );
 
   const generateRandomCoordsforItems = useCallback(() => {
@@ -204,8 +169,8 @@ function App() {
       }, 300);
     }
   };
-  checkSnakeMoves();
 
+  //Snake direction handling
   const handleDirectionChange = useCallback(
     (direction) => {
       if (gameState !== "playing") return;
@@ -271,6 +236,18 @@ function App() {
     [gameState, snakeLength, snakeMoves, setDirection, boardSize]
   );
 
+  //Speed and timer interval timer change
+  const handleSpeedChange = useCallback(
+    (speedAndTime) => {
+      setSpeed(speedAndTime.label);
+      setMoveTimer(speedAndTime.timer);
+    },
+    [setMoveTimer, setSpeed]
+  );
+
+  //USE EFFECTS
+
+  //Direction event listeners
   useEffect(() => {
     const handleKeyUp = (e) => {
       if (e.key === "ArrowUp" || e.key === "w") {
@@ -316,6 +293,7 @@ function App() {
     const moveSnake = () => {
       if (gameState === "playing") {
         totalTimePlayed += moveTimer;
+        totalTimeRef.current = totalTimePlayed;
         let snakeHeadCoords = snakeMoves[snakeMoves.length - 1];
         setLastPosition(snakeMoves[0]);
         let newCoords = newSnakeHeadCoords(snakeHeadCoords);
@@ -350,7 +328,7 @@ function App() {
     storeGameInfoInCache,
     endGame,
   ]);
-  
+
   //Window loses focus event listener
   useEffect(() => {
     const handleBlur = () => {
@@ -364,59 +342,83 @@ function App() {
     };
   }, [gameState]);
 
-  //Combined props to pass to components
-  const combinedProps = useMemo(
-    () => ({
-      boardSize,
-      snakeMoves,
-      direction,
-      snakeLength,
-      edibleCoords,
-      edibleStatus,
-      gameState,
-      startGame,
-      resumeGame,
-      totalTimePlayed,
-      speed,
-      allSpeeds,
-      setSpeed,
-      highscore,
-      setGameState,
-      handleDirectionChange,
-    }),
-    [
-      boardSize,
-      snakeMoves,
-      direction,
-      snakeLength,
-      gameState,
-      startGame,
-      resumeGame,
-      speed,
-      highscore,
-      setGameState,
-      handleDirectionChange,
-      setSpeed,
-      edibleCoords,
-      edibleStatus,
-    ]
-  );
+  //Loading game info from cache
+  useEffect(() => {
+    let cachedGameInfo = localStorage.getItem("snakey-boi-info");
+    let cachedGameSettings = localStorage.getItem("snakey-boi-settings");
+    if (cachedGameSettings) {
+      cachedGameSettings = JSON.parse(cachedGameSettings);
+      setHighscore(cachedGameSettings.highscore);
+      setSpeed(cachedGameSettings.speed);
+    }
+    if (cachedGameInfo) {
+      cachedGameInfo = JSON.parse(cachedGameInfo);
+      if (cachedGameInfo.snakeLength <= 1) return;
+      setSnakeLength(cachedGameInfo.snakeLength);
+      setDirection(cachedGameInfo.direction);
+      setSnakeMoves(cachedGameInfo.snakeMoves);
+      setGameState("continue");
+      totalTimePlayed = cachedGameInfo.totalTimePlayed;
+      if (
+        cachedGameInfo.edibleCoords.x < 0 ||
+        cachedGameInfo.edibleCoords.y < 0
+      ) {
+        setEdibleCoords(generateRandomCoordsforItems());
+      } else {
+        setEdibleCoords(cachedGameInfo.edibleCoords);
+      }
+    } else {
+      setGameState("not-started");
+    }
+  }, []);
+
+  checkSnakeMoves();
 
   return (
     <div className={`App ${gameState}`}>
       <div className="middle-container">
-        <GameBanner {...combinedProps} />
-        <TopBar {...combinedProps} />
+        <GameBanner
+          gameState={gameState}
+          snakeLength={snakeLength}
+          startGame={startGame}
+          resumeGame={resumeGame}
+          boardSize={boardSize}
+          totalTimePlayed={totalTimeRef}
+        />
+        <TopBar
+          gameState={gameState}
+          resumeGame={resumeGame}
+          highscore={highscore}
+          snakeLength={snakeLength}
+          setGameState={setGameState}
+        />
         <div className="board-container">
-          <MiniGameBanner {...combinedProps} />
-          <Board {...combinedProps} />
+          <MiniGameBanner
+            gameState={gameState}
+            resumeGame={resumeGame}
+            speed={speed}
+            allSpeedsAndTimers={allSpeedsAndTimers}
+            handleSpeedChange={handleSpeedChange}
+          />
+          <Board
+            snakeMoves={snakeMoves}
+            boardSize={boardSize}
+            edibleCoords={edibleCoords}
+            direction={direction}
+            edibleStatus={edibleStatus}
+            snakeLength={snakeLength}
+          />
           <div className="traffic-lights" ref={trafficLights}>
             <span className="traffic-light red"></span>
             <span className="traffic-light orange"></span>
             <span className="traffic-light green"></span>
           </div>
         </div>
-        <UserControls {...combinedProps} />
+        <UserControls
+          gameState={gameState}
+          direction={direction}
+          handleDirectionChange={handleDirectionChange}
+        />
       </div>
     </div>
   );

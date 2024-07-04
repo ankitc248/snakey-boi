@@ -2,8 +2,8 @@ const MiniGameBanner = ({
   gameState,
   resumeGame,
   speed,
-  allSpeeds,
-  setSpeed,
+  allSpeedsAndTimers,
+  handleSpeedChange
 }) => {
   return (
     <div className="game-banner mini">
@@ -44,8 +44,8 @@ const MiniGameBanner = ({
                 type="button"
                 className="btn left-btn"
                 onClick={() =>
-                  allSpeeds.indexOf(speed) > 0
-                    ? setSpeed(allSpeeds[allSpeeds.indexOf(speed) - 1])
+                  allSpeedsAndTimers.findIndex((item)=> item.label === speed) > 0
+                    ? handleSpeedChange(allSpeedsAndTimers[allSpeedsAndTimers.findIndex((item)=> item.label === speed) - 1])
                     : null
                 }
               >
@@ -60,8 +60,8 @@ const MiniGameBanner = ({
                 type="button"
                 className="btn right-btn"
                 onClick={() =>
-                  allSpeeds.indexOf(speed) < allSpeeds.length - 1
-                    ? setSpeed(allSpeeds[allSpeeds.indexOf(speed) + 1])
+                  allSpeedsAndTimers.findIndex((item)=> item.label === speed) < allSpeedsAndTimers.length - 1
+                    ? handleSpeedChange(allSpeedsAndTimers[allSpeedsAndTimers.findIndex((item)=> item.label === speed) + 1])
                     : null
                 }
               >
