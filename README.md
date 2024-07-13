@@ -1,6 +1,11 @@
 # Snakey-boi
+
+![Preview](preview.jpg)
+
 The iconic snake game made from scratch in ReactJS.
 Control the snake to eat, grow longer, and try to achieve the highest score possible!
+
+[Visit](https://snakey-boi.vercel.app/)
 
 ## Features
 
@@ -14,7 +19,6 @@ Control the snake to eat, grow longer, and try to achieve the highest score poss
 
 - Progression
 - Power-ups
-
 
 ##### Credit
 
