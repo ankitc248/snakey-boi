@@ -5,7 +5,7 @@
 The iconic snake game made from scratch in ReactJS.
 Control the snake to eat, grow longer, and try to achieve the highest score possible!
 
-[Visit](https://snakey-boi.vercel.app/)
+[Play](https://snakey-boi.vercel.app/)
 
 ## Features
 
