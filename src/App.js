@@ -82,20 +82,27 @@ function App() {
   );
 
   const generateRandomCoordsforItems = useCallback(() => {
-    let randomCoords = {
-      x: Math.floor(Math.random() * boardSize),
-      y: Math.floor(Math.random() * boardSize),
-    };
-    if (
-      snakeMoves.some(
-        (snakeMove) =>
-          snakeMove.x === randomCoords.x && snakeMove.y === randomCoords.y
-      ) ||
-      (edibleCoords.x === randomCoords.x && edibleCoords.y === randomCoords.y)
-    ) {
-      return generateRandomCoordsforItems();
+    let allCoords = [];
+    for (let x = 0; x < boardSize; x++) {
+      for (let y = 0; y < boardSize; y++) {
+        allCoords.push({ x, y });
+      }
+    }
+    const emptyCoords = allCoords.filter((coord) => {
+      const isOccupiedBySnake = snakeMoves.some(
+        (snakeMove) => snakeMove.x === coord.x && snakeMove.y === coord.y
+      );
+      const isOccupiedByEdible =
+        edibleCoords.x === coord.x && edibleCoords.y === coord.y;
+
+      return !isOccupiedBySnake && !isOccupiedByEdible;
+    });
+    if (emptyCoords.length > 0) {
+      const randomIndex = Math.floor(Math.random() * emptyCoords.length);
+      return emptyCoords[randomIndex];
     } else {
-      return randomCoords;
+      console.warn("No empty coordinates available");
+      return null;
     }
   }, [boardSize, snakeMoves, edibleCoords]);
 
@@ -350,7 +357,13 @@ function App() {
       cachedGameSettings = JSON.parse(cachedGameSettings);
       setHighscore(cachedGameSettings.highscore);
       setSpeed(cachedGameSettings.speed);
-      setMoveTimer(allSpeedsAndTimers[allSpeedsAndTimers.findIndex((item) => item.label === cachedGameSettings.speed)].timer);
+      setMoveTimer(
+        allSpeedsAndTimers[
+          allSpeedsAndTimers.findIndex(
+            (item) => item.label === cachedGameSettings.speed
+          )
+        ].timer
+      );
     }
     if (cachedGameInfo) {
       cachedGameInfo = JSON.parse(cachedGameInfo);
