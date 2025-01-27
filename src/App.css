@@ -11,9 +11,19 @@
   --orange-color: #ffa45a;
 }
 
+@font-face {
+  font-family: 'Calamity';
+  src: url('../public/assets/fonts/Calamity-Regular.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Calamity-Bold';
+  src: url('../public/assets/fonts/Calamity-Bold.otf') format('opentype');
+}
+
 * {
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Calamity', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   color: var(--white-font-color);
   text-wrap: pretty;
@@ -167,7 +177,7 @@ button:hover {
     padding: 0.25rem 1rem;
     color: var(--dark-black-color);
     font-size: 16px;
-    font-family: monospace;
+    /* font-family: monospace; */
     font-weight: 600;
     border-radius: 4px;
     box-shadow: 0px 4px 0px var(--light-black-color);
@@ -296,7 +306,7 @@ button:hover {
   }
 
   .banner-title {
-    font-weight: 600;
+    font-family: 'Calamity-Bold' !important;
     text-transform: uppercase;
     letter-spacing: 3px;
     font-size: 32px;
@@ -353,6 +363,7 @@ button:hover {
   }
 
   .banner-title {
+    font-family: 'Calamity-Bold' !important;
     text-shadow: 0px 2px 2px var(--green-color)
   }
 }
@@ -413,7 +424,7 @@ button:hover {
 .setting-controls {
   display: inline-flex;
   align-items: stretch;
-  animation: scale-up-pop-in 0.3s ease-out forwards;
+  animation: scale-up-pop-in 0.2s ease-out forwards;
 
   .left-btn {
     border-top-right-radius: 0;
@@ -752,11 +763,11 @@ button:hover {
 
 @keyframes scale-up-pop-in {
   0% {
-    scale: 0;
+    scale: 0.5;
   }
 
   50% {
-    scale: 1.5;
+    scale: 1.2;
   }
 
   100% {
@@ -943,7 +954,7 @@ button:hover {
   outline-offset: 8px;
 }
 
-.game-banner .total-time{
+.game-banner .total-time {
   display: inline-block;
   border: solid 2px var(--yellow-color);
   padding-inline: 0.5rem;
